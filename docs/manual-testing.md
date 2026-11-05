@@ -38,7 +38,7 @@ Run `npm test`, `npm run check`, and `npm run package` with Node 22+. Automated 
 ## Optional real-extension smoke test
 
 ```sh
-npm install --prefix .tools playwright --no-audit --no-fund
+npm install --prefix .tools playwright@1.64.1 --no-audit --no-fund
 npx --prefix .tools playwright install chromium
 npm run test:browser
 npm run test:inbox-browser

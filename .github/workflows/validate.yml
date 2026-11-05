@@ -16,6 +16,10 @@ jobs:
       - run: npm test
       - run: npm run check
       - run: npm run package
+      - run: npm install --prefix .tools playwright@1.64.1 --no-audit --no-fund
+      - run: npx --prefix .tools playwright install --with-deps chromium
+      - run: npm run test:browser
+      - run: npm run test:inbox-browser
       - uses: actions/upload-artifact@v4
         with:
           name: AppTracker-extension
