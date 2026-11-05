@@ -43,5 +43,20 @@ function applyOperation(state, operation, payload) {
       ? { ...item, applicationId: '' } : item);
     return;
   }
+  if (operation === 'saveEmail') {
+    const existing = state.tracked_emails.find(item => item.threadId === payload.threadId);
+    const next = email(payload, existing || {});
+    if (next.applicationId && !state.applications.some(item => item.id === next.applicationId)) {
+      throw new Error('The linked application no longer exists.');
+    }
+    state.tracked_emails = existing
+      ? state.tracked_emails.map(item => item.threadId === existing.threadId ? next : item)
+      : [...state.tracked_emails, next];
+    return;
+  }
+  if (operation === 'deleteEmail') {
+    state.tracked_emails = state.tracked_emails.filter(item => item.threadId !== payload.threadId);
+    return;
+  }
   throw new Error('Unknown storage operation.');
 }
