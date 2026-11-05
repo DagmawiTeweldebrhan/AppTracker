@@ -78,3 +78,9 @@ This project is a browser extension (Manifest V3) designed to help users track j
 
 ## 7. Future Expansion Notes
 *   Implement OAuth2 in `background.js` to securely connect to the Gmail API for automatic detection of application confirmation emails and rejection emails based on keywords.
+
+## 8. Authorized Gmail Expansion (November 5, 2026)
+
+At the user's request, the optional Gmail integration is implemented for multiple Gmail/Google Workspace accounts. The dashboard includes per-account connection, scan progress, pause/resume, reconnect, and disconnect controls. A Manifest V3 alarm resumes historical mailbox scans and checks new mail through the read-only Gmail API. Explicit account consent and a configured Google OAuth client are required.
+
+Confirmation and rejection detection reads message bodies locally, creates or updates matching application records, and links email threads. Uncertain company/role matches are flagged for manual review. The original application and email model fields remain intact; auxiliary storage tracks account scan checkpoints, deduplication, and status chronology. No email bodies are persisted, and no AppTracker backend or AI service is used. Setup and limitations are documented in `docs/gmail-setup.md`.
