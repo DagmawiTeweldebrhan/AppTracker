@@ -43,15 +43,13 @@ export const normalizeIdentity = normalized;
 export function detectApplication(message) {
   if (message.outgoing) return null;
   const subject = text(message.subject, 500);
-  const body = htmlToText(message.body);
+  const body = htmlToText(message.body).split(/\bOn .{5,120}wrote:|-----Original Message-----/i)[0];
   const content = `${subject}\n${body}`;
-  const confirmation = /thank(?:s| you) for (?:applying|your (?:job )?application)|(?:we(?:'ve| have) |has been |was )received your application|your application (?:has been|was) (?:received|submitted)|application (?:received|confirmation)|successfully (?:applied|submitted your application)/i.test(content);
+  const confirmation = /thank(?:s| you) for (?:applying|your (?:job )?application)|(?:we(?:'ve| have)? |has been |was )received your application|your application (?:has been|was) (?:received|submitted)|application (?:received|confirmation)|successfully (?:applied|submitted your application)/i.test(content);
   const jobContext = /\b(?:application|applying|candidate|candidacy|position|role|interview|hiring|recruitment)\b/i.test(content);
   const rejection = /(?:not|won't|will not|unable to) (?:be )?(?:moving|move|proceed|progress|continue|offer)|decided (?:not to|to (?:move forward|proceed) with other)|(?:other|another) candidate|unsuccessful|regret to inform|application.{0,60}(?:rejected|not selected)|position.{0,40}(?:filled|closed)/i.test(content);
   if (!(confirmation || (jobContext && rejection))) return null;
-  // Discard quoted historical mail so an old rejection cannot classify a new message.
-  const current = content.split(/\bOn .{5,120}wrote:|-----Original Message-----/i)[0];
-  const status = rejection && /not|other candidate|another candidate|unsuccessful|regret|rejected|not selected|filled|closed/i.test(current) ? 'Rejected' : 'Applied';
+  const status = rejection ? 'Rejected' : 'Applied';
   let company = '';
   let role = '';
   const roleAtCompany = content.match(/(?:applying|application|interest|applied)(?: for| in)?(?: the)?\s+(.{2,100}?)\s+(?:position |role )?at\s+([^.!\n|]{2,100})/i);
@@ -61,9 +59,13 @@ export function detectApplication(message) {
   }
   const companyMatch = content.match(/(?:thank(?:s| you) for applying (?:to|with)|your (?:interest|application) (?:in|to|with)|application (?:to|with))\s+([^.!\n|]{2,100}?)(?=\s+(?:for|has|was|is|we|and|our)\b|[.!\n|]|$)/i);
   if (!company && companyMatch) company = clean(companyMatch[1]);
-  const roleMatch = content.match(/(?:application for|applied for|applying for|interest in)(?: the)?\s+([^.!\n|]{2,120}?)(?=\s+(?:position|role|at|with|has|was|is)\b|[.!\n|]|$)/i)
+  const roleMatch = content.match(/(?:application for|applied for|applying for)(?: the)?\s+([^.!\n|]{2,120}?)(?=\s+(?:position|role|at|with|has|was|is)\b|[.!\n|]|$)/i)
     || content.match(/(?:position|role|job title)\s*:\s*([^\n.!|]{2,100})/i);
   if (!role && roleMatch) role = clean(roleMatch[1]);
+  if (!role && company) {
+    const companyFirstRole = content.match(/\bfor (?:the )?([^.!\n|]{2,100}?) (?:position|role)\b/i);
+    if (companyFirstRole) role = clean(companyFirstRole[1]);
+  }
   if (!company) {
     const senderName = message.sender?.match(/^\s*"?([^"<]+?)"?\s*</)?.[1]?.trim();
     if (senderName && !/greenhouse|lever|workday|linkedin|indeed|recruit|talent|no.?reply|hiring team|careers|jobs|notifications/i.test(senderName)) company = clean(senderName);
