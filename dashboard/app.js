@@ -20,6 +20,31 @@ function openApplication(item) {
 document.querySelector('#add-record').addEventListener('click', () => openApplication());
 document.querySelector('#close-editor').addEventListener('click', () => dialog.close());
 document.querySelector('#cancel-editor').addEventListener('click', () => dialog.close());
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  const submit = form.querySelector('[type=submit]');
+  submit.disabled = true;
+  try {
+    const payload = Object.fromEntries(new FormData(form));
+    if (editingId) payload.id = editingId;
+    state = await request('saveApplication', payload);
+    dialog.close(); render(); notify('Application saved.');
+  } catch (error) { document.querySelector('#form-error').textContent = error.message; }
+  finally { submit.disabled = false; }
+});
+document.querySelector('#records').addEventListener('click', async event => {
+  const button = event.target.closest('button[data-operation]');
+  if (!button) return;
+  const { operation, id } = button.dataset;
+  const item = state.applications.find(record => record.id === id);
+  if (operation === 'editApplication' && item) return openApplication(item);
+  if (operation === 'deleteApplication') {
+    if (!confirm(`Delete ${item?.company || 'this application'}? Linked emails will be kept.`)) return;
+    button.disabled = true;
+    try { state = await request(operation, { id }); render(); notify('Application deleted. Linked emails were kept.'); }
+    catch (error) { notify(error.message, true); button.disabled = false; }
+  }
+});
 const labels = {
   applications: ['Your applications', 'A little structure for your next big opportunity.', 'All applications', '+ Add application'],
   emails: ['Your email threads', 'Keep the conversations connected to your next move.', 'Tracked emails', '+ Add email'],
