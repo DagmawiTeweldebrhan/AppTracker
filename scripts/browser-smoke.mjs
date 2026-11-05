@@ -1,8 +1,10 @@
 import { chromium } from '../.tools/node_modules/playwright/index.mjs';
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import { mkdtemp } from 'node:fs/promises';
 const root = process.cwd();
-const context = await chromium.launchPersistentContext(path.join(root, '.tools', 'browser-profile'), {
+const profile = await mkdtemp(path.join(root, '.tools', 'browser-profile-'));
+const context = await chromium.launchPersistentContext(profile, {
   channel: 'chromium', headless: true,
   args: [`--disable-extensions-except=${root}`, `--load-extension=${root}`]
 });
@@ -14,6 +16,8 @@ try {
   const id = new URL(worker.url()).host;
   const page = await context.newPage();
   await page.goto(`chrome-extension://${id}/dashboard/index.html`);
+  await page.waitForFunction(() => document.querySelector('#gmail-redirect')?.value.startsWith('https://'));
+  assert.equal(await page.locator('#inbox-message').textContent(), '');
   await page.getByRole('heading', { name: 'A fresh start' }).waitFor();
   await page.getByRole('button', { name: '+ Add application', exact: true }).click();
   await page.getByLabel('Company', { exact: true }).fill('Acme');
@@ -52,6 +56,7 @@ try {
   await page.getByText('Acme', { exact: true }).waitFor();
   assert.equal(await page.getByText('Beta', { exact: true }).count(), 0);
   await page.getByLabel('Search records').fill('');
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: '.tools/dashboard-desktop.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: '.tools/dashboard-mobile.png', fullPage: true });

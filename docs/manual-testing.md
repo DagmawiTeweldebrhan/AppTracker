@@ -44,9 +44,9 @@ npm run test:browser
 npm run test:inbox-browser
 ```
 
-This launches headless Chromium with the real unpacked MV3 extension and a separate test profile in `.tools/browser-profile`. It clears only that test profile's extension storage. It exercises dashboard CRUD, email linking and action flags, rejection feedback, reload persistence, popup saves, cross-window updates, search, and email unlinking/deletion. Desktop and mobile screenshots are written to `.tools/`. It does not open your ordinary browser profile or access Gmail.
+This launches headless Chromium with the real unpacked MV3 extension and a fresh test profile in `.tools/browser-profile-*`. It clears only that test profile's extension storage. Fresh profiles ensure a previously cached unpacked service worker cannot mask current-code changes. It exercises dashboard CRUD, email linking and action flags, rejection feedback, reload persistence, popup saves, cross-window updates, search, and email unlinking/deletion. Desktop and mobile screenshots are written to `.tools/`. It does not open your ordinary browser profile or access Gmail.
 
-The inbox browser test uses a separate `.tools/inbox-test-profile` and fixture Gmail responses to exercise the scan → detection → import → storage → dashboard flow, automatic rejection updates, thread deduplication, account progress, and disconnect controls. Its test-only authorization and permission stubs exist solely inside that disposable browser context. It does not validate Google's live OAuth consent screen or access a real mailbox.
+The inbox browser test uses a fresh `.tools/inbox-test-profile-*` and fixture Gmail responses to exercise the scan → detection → import → storage → dashboard flow, automatic rejection updates, thread deduplication, account progress, and disconnect controls. Its test-only authorization and permission stubs exist solely inside that disposable browser context. It does not validate Google's live OAuth consent screen or access a real mailbox.
 
 ## Automatic inbox acceptance checks
 
