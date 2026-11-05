@@ -34,3 +34,13 @@ Load the repository as an unpacked extension in a clean Chrome profile. Open the
 ## Automated checks
 
 Run `npm test`, `npm run check`, and `npm run package` with Node 22+. Automated unit tests cover model validation, concurrent writes, link reconciliation, storage failure recovery, parser validation, rejection filtering, searching, and sorting. Gmail DOM capture must also be checked against the current signed-in Gmail UI; no test needs mailbox credentials or live email access.
+
+## Optional real-extension smoke test
+
+```sh
+npm install --prefix .tools playwright --no-audit --no-fund
+npx --prefix .tools playwright install chromium
+npm run test:browser
+```
+
+This launches headless Chromium with the real unpacked MV3 extension and a separate test profile in `.tools/browser-profile`. It clears only that test profile's extension storage. It exercises dashboard CRUD, email linking and action flags, rejection feedback, reload persistence, popup saves, cross-window updates, search, and email unlinking/deletion. Desktop and mobile screenshots are written to `.tools/`. It does not open your ordinary browser profile or access Gmail.

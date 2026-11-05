@@ -1,0 +1,66 @@
+import { chromium } from '../.tools/node_modules/playwright/index.mjs';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+const root = process.cwd();
+const context = await chromium.launchPersistentContext(path.join(root, '.tools', 'browser-profile'), {
+  channel: 'chromium', headless: true,
+  args: [`--disable-extensions-except=${root}`, `--load-extension=${root}`]
+});
+const errors = [];
+context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
+try {
+  const worker = context.serviceWorkers()[0] || await context.waitForEvent('serviceworker');
+  await worker.evaluate(() => chrome.storage.local.clear());
+  const id = new URL(worker.url()).host;
+  const page = await context.newPage();
+  await page.goto(`chrome-extension://${id}/dashboard/index.html`);
+  await page.getByRole('heading', { name: 'A fresh start' }).waitFor();
+  await page.getByRole('button', { name: '+ Add application', exact: true }).click();
+  await page.getByLabel('Company', { exact: true }).fill('Acme');
+  await page.getByLabel('Role', { exact: true }).fill('Engineer');
+  await page.getByLabel('Status', { exact: true }).selectOption('Interviewing');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByText('Acme', { exact: true }).waitFor();
+  await page.getByRole('link', { name: 'Emails', exact: false }).click();
+  await page.getByRole('button', { name: '+ Add email', exact: true }).click();
+  await page.getByLabel('Subject', { exact: true }).fill('Interview invitation');
+  await page.getByLabel('Sender', { exact: true }).fill('recruiter@example.com');
+  await page.getByLabel('Linked application').selectOption({ label: 'Acme · Engineer' });
+  await page.getByLabel('Action required').check();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('cell', { name: 'Acme · Engineer' }).waitFor();
+  await page.getByRole('button', { name: 'Mark done' }).click();
+  await page.getByRole('button', { name: 'Needs action' }).waitFor();
+  await page.goto(`chrome-extension://${id}/dashboard/index.html#applications`);
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await page.getByLabel('Status', { exact: true }).selectOption('Rejected');
+  await page.getByLabel('Notes').fill('Final round: focus on examples. <script>alert(1)</script>');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('link', { name: 'Rejection log' }).click();
+  await page.getByRole('cell', { name: 'Final round:', exact: false }).waitFor();
+  await page.reload();
+  await page.getByText('Acme', { exact: true }).waitFor();
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${id}/popup/popup.html`);
+  await popup.getByLabel('Company', { exact: true }).fill('Beta');
+  await popup.getByLabel('Role', { exact: true }).fill('Designer');
+  await popup.getByRole('button', { name: 'Save application' }).click();
+  await popup.getByText('Application saved. Keep going!').waitFor();
+  await page.locator('[data-tab=applications]').click();
+  await page.getByText('Beta', { exact: true }).waitFor();
+  await page.getByLabel('Search records').fill('Acme');
+  await page.getByText('Acme', { exact: true }).waitFor();
+  assert.equal(await page.getByText('Beta', { exact: true }).count(), 0);
+  await page.getByLabel('Search records').fill('');
+  await page.screenshot({ path: '.tools/dashboard-desktop.png', fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: '.tools/dashboard-mobile.png', fullPage: true });
+  page.on('dialog', dialog => dialog.accept());
+  await page.getByRole('row').filter({ hasText: 'Acme' }).getByRole('button', { name: 'Delete' }).click();
+  await page.getByRole('link', { name: 'Emails', exact: false }).click();
+  await page.getByRole('cell', { name: 'Unlinked', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Delete', exact: true }).click();
+  await page.getByRole('heading', { name: 'Keep your conversations together' }).waitFor();
+  assert.deepEqual(errors, []);
+  console.log('PASS: real MV3 worker, dashboard CRUD, email links/actions/deletion, rejection notes, persistence, popup save, search, cross-window refresh, mobile layout, no page errors.');
+} finally { await context.close(); }

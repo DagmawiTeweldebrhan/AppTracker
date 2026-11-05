@@ -6,6 +6,7 @@
   "description": "Local-first Manifest V3 job application and email tracker",
   "scripts": {
     "test": "node --test",
+    "test:browser": "node scripts/browser-smoke.mjs",
     "check": "node scripts/check.mjs",
     "package": "node scripts/package.mjs"
   },
