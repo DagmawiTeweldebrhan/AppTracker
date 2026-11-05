@@ -2,9 +2,13 @@ import { localDate, node } from '../utils/dom.js';
 import { STATUSES } from '../utils/models.js';
 
 function field(label, name, value = '', options = {}) {
-  const wrapper = node('label', label);
+  const wrapper = node('label');
+  const caption = node('span', label);
+  caption.id = `label-${name}`;
+  wrapper.append(caption);
   const input = document.createElement(options.tag || 'input');
   input.name = name;
+  input.setAttribute('aria-labelledby', caption.id);
   if (options.tag !== 'textarea' && options.tag !== 'select') input.type = options.type || 'text';
   if (options.required) input.required = true;
   if (options.maxLength) input.maxLength = options.maxLength;
