@@ -1,9 +1,25 @@
 import { readState, request } from '../utils/storage.js';
 import { notify } from '../utils/dom.js';
 import { renderApplications } from './views.js';
+import { applicationFields } from './forms.js';
 
 let state = { applications: [], tracked_emails: [] };
 let tab = 'applications';
+let editingId = '';
+let editingType = 'application';
+const dialog = document.querySelector('#editor');
+const form = document.querySelector('#record-form');
+function openApplication(item) {
+  editingType = 'application';
+  editingId = item?.id || '';
+  document.querySelector('#editor-title').textContent = item ? 'Edit application' : 'Add application';
+  document.querySelector('#form-error').textContent = '';
+  applicationFields(document.querySelector('#form-fields'), item || { status: tab === 'rejections' ? 'Rejected' : 'Applied' });
+  dialog.showModal();
+}
+document.querySelector('#add-record').addEventListener('click', () => openApplication());
+document.querySelector('#close-editor').addEventListener('click', () => dialog.close());
+document.querySelector('#cancel-editor').addEventListener('click', () => dialog.close());
 const labels = {
   applications: ['Your applications', 'A little structure for your next big opportunity.', 'All applications', '+ Add application'],
   emails: ['Your email threads', 'Keep the conversations connected to your next move.', 'Tracked emails', '+ Add email'],
