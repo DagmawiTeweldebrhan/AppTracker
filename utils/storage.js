@@ -1,11 +1,13 @@
 import { application, email } from './models.js';
+import { importDetectedMessages } from './auto-import.js';
 
 let pending = Promise.resolve();
 export async function readState() {
-  const result = await chrome.storage.local.get(['applications', 'tracked_emails']);
+  const result = await chrome.storage.local.get(['applications', 'tracked_emails', 'automation']);
   return {
     applications: Array.isArray(result.applications) ? result.applications : [],
-    tracked_emails: Array.isArray(result.tracked_emails) ? result.tracked_emails : []
+    tracked_emails: Array.isArray(result.tracked_emails) ? result.tracked_emails : [],
+    automation: { processed: {}, applications: {}, threads: {}, ...result.automation }
   };
 }
 
@@ -37,10 +39,17 @@ function reconcileLinks(state) {
 }
 
 function applyOperation(state, operation, payload) {
+  if (operation === 'importDetectedEmails') {
+    importDetectedMessages(state, payload.events || []);
+    return;
+  }
   if (operation === 'saveApplication') {
     const existing = payload.id ? state.applications.find(item => item.id === payload.id) : null;
     if (payload.id && !existing) throw new Error('This application no longer exists.');
     const next = application(payload, existing || {});
+    if (existing && existing.status !== next.status) {
+      state.automation.applications[next.id] = { lastStatusAt: Date.now() };
+    }
     state.applications = existing
       ? state.applications.map(item => item.id === existing.id ? next : item)
       : [...state.applications, next];
