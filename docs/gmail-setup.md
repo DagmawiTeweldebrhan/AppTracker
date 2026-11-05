@@ -4,7 +4,7 @@ AppTracker 1.1 can scan multiple connected Gmail accounts, read application-rela
 
 ## One-time Google setup
 
-1. Load the updated extension from the same folder you intend to keep using. If loading `dist/AppTracker`, run `npm run package` first. Click **Reload** on `chrome://extensions` after an update.
+1. Load the updated extension from the same folder you intend to keep using. If loading `dist/AppTracker`, run `npm run package` first. Click **Reload** on `chrome://extensions` after an update. Keep using your existing install folder: an unpacked extension's ID, redirect URI, and local records depend on that identity. Switching between source and packaged folders creates a different extension installation; use the redirect displayed by the one you actually loaded.
 2. Open AppTracker’s dashboard and expand **Gmail connection setup**. Copy the **Redirect URI** displayed there.
 3. Open [Google Cloud Console](https://console.cloud.google.com/), select or create a project, and enable the **Gmail API** in APIs & Services → Library.
 4. Configure Google Auth Platform branding, audience, and data access for that project. For a personal project in **Testing**, add every Gmail account you want to connect as a test user. A Workspace-only internal project can be limited to your organization; your Workspace administrator may restrict Gmail API access.
