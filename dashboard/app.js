@@ -48,6 +48,19 @@ document.querySelector('#records').addEventListener('click', async event => {
   const button = event.target.closest('button[data-operation]');
   if (!button) return;
   const { operation, id } = button.dataset;
+  const thread = state.tracked_emails.find(record => record.threadId === id);
+  if (operation === 'editEmail' && thread) return openEmail(thread);
+  if (operation === 'toggleEmail' || operation === 'deleteEmail') {
+    if (!thread) return notify('This email no longer exists. Refresh the dashboard.', true);
+    if (operation === 'deleteEmail' && !confirm(`Delete the tracked email “${thread.subject}”?`)) return;
+    button.disabled = true;
+    try {
+      state = await request(operation === 'toggleEmail' ? 'saveEmail' : operation,
+        operation === 'toggleEmail' ? { ...thread, actionRequired: !thread.actionRequired } : { threadId: id });
+      render(); notify(operation === 'toggleEmail' ? 'Email action status updated.' : 'Email deleted.');
+    } catch (error) { notify(error.message, true); button.disabled = false; }
+    return;
+  }
   const item = state.applications.find(record => record.id === id);
   if (operation === 'editApplication' && item) return openApplication(item);
   if (operation === 'deleteApplication') {
