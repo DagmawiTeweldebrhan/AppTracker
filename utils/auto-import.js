@@ -29,10 +29,13 @@ export function importDetectedMessages(state, events) {
     }
     if (item) {
       const metadata = automation.applications[item.id] || {};
+      const previousThread = automation.threads[event.threadId];
+      const latest = previousThread && Date.parse(previousThread.dateReceived) > timestamp ? previousThread : event;
+      const statusTimestamp = Date.parse(latest.dateReceived);
       if (event.status === 'Applied' && timestamp < Date.parse(item.dateApplied)) item.dateApplied = event.dateReceived;
-      if (timestamp >= (metadata.lastStatusAt || 0) && (event.status === 'Rejected' || item.status === 'Applied')) {
-        item.status = event.status;
-        metadata.lastStatusAt = timestamp;
+      if (statusTimestamp >= (metadata.lastStatusAt || 0) && (latest.status === 'Rejected' || item.status === 'Applied')) {
+        item.status = latest.status;
+        metadata.lastStatusAt = statusTimestamp;
       }
       automation.applications[item.id] = metadata;
     }
