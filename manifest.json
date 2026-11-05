@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
   "name": "AppTracker",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Track job applications, linked emails, and rejection feedback in one place.",
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "activeTab", "scripting", "identity", "alarms"],
+  "optional_host_permissions": ["https://gmail.googleapis.com/*"],
   "background": { "service_worker": "background.js", "type": "module" },
   "action": { "default_title": "AppTracker · Quick add", "default_popup": "popup/popup.html" },
   "options_page": "dashboard/index.html",

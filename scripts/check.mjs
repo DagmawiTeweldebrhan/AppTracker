@@ -6,7 +6,8 @@ import path from 'node:path';
 const root = path.resolve(import.meta.dirname, '..');
 const manifest = JSON.parse(await readFile(path.join(root, 'manifest.json'), 'utf8'));
 assert.equal(manifest.manifest_version, 3);
-assert.deepEqual(manifest.permissions, ['storage', 'activeTab', 'scripting']);
+assert.deepEqual(manifest.permissions, ['storage', 'activeTab', 'scripting', 'identity', 'alarms']);
+assert.deepEqual(manifest.optional_host_permissions, ['https://gmail.googleapis.com/*']);
 assert.equal(manifest.host_permissions, undefined, 'No standing host access is required');
 for (const file of [manifest.background.service_worker, manifest.action.default_popup, manifest.options_page, ...Object.values(manifest.icons)]) {
   await access(path.join(root, file));
