@@ -106,7 +106,14 @@ function render() {
 
 for (const id of ['search', 'status-filter', 'sort']) document.querySelector(`#${id}`).addEventListener('input', render);
 
-window.addEventListener('hashchange', render);
+window.addEventListener('hashchange', () => {
+  document.querySelector('#search').value = '';
+  document.querySelector('#status-filter').value = '';
+  render();
+});
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && (changes.applications || changes.tracked_emails)) load();
+});
 async function load() {
   try { state = await readState(); render(); }
   catch (error) { notify(`Could not load your records: ${error.message}`, true); }
