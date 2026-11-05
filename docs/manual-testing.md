@@ -41,6 +41,15 @@ Run `npm test`, `npm run check`, and `npm run package` with Node 22+. Automated 
 npm install --prefix .tools playwright --no-audit --no-fund
 npx --prefix .tools playwright install chromium
 npm run test:browser
+npm run test:inbox-browser
 ```
 
 This launches headless Chromium with the real unpacked MV3 extension and a separate test profile in `.tools/browser-profile`. It clears only that test profile's extension storage. It exercises dashboard CRUD, email linking and action flags, rejection feedback, reload persistence, popup saves, cross-window updates, search, and email unlinking/deletion. Desktop and mobile screenshots are written to `.tools/`. It does not open your ordinary browser profile or access Gmail.
+
+The inbox browser test uses a separate `.tools/inbox-test-profile` and fixture Gmail responses to exercise the scan → detection → import → storage → dashboard flow, automatic rejection updates, thread deduplication, account progress, and disconnect controls. Its test-only authorization and permission stubs exist solely inside that disposable browser context. It does not validate Google's live OAuth consent screen or access a real mailbox.
+
+## Automatic inbox acceptance checks
+
+After completing [Google setup](gmail-setup.md), connect a throwaway Gmail test account containing a confirmation and a later rejection for the same company/role. Verify the account card, automatic Applied record, subsequent Rejected status, and a linked email thread. Use a second consented test account to verify multiple inboxes. Check read and archived messages as well as inbox messages.
+
+Pause an account and verify its scan count stops changing. Resume, then restart Chrome and check silent renewal or the account-specific Reconnect message. Deny consent, revoke Gmail authorization, and temporarily remove API host permission to verify clear account errors. Reconnect and confirm the saved scan cursor resumes without duplicate applications. Disconnect and verify imported records remain. Live tests require your own Google client; automated tests never require real credentials.

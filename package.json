@@ -7,6 +7,7 @@
   "scripts": {
     "test": "node --test",
     "test:browser": "node scripts/browser-smoke.mjs",
+    "test:inbox-browser": "node scripts/inbox-browser-smoke.mjs",
     "check": "node scripts/check.mjs",
     "package": "node scripts/package.mjs"
   },
