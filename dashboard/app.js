@@ -2,6 +2,7 @@ import { readState, request } from '../utils/storage.js';
 import { notify } from '../utils/dom.js';
 import { renderApplications } from './views.js';
 import { applicationFields } from './forms.js';
+import { filterRecords } from '../utils/filters.js';
 
 let state = { applications: [], tracked_emails: [] };
 let tab = 'applications';
@@ -67,8 +68,16 @@ function render() {
   document.querySelector('#status-filter').hidden = tab !== 'applications';
   document.querySelector('#search').placeholder = tab === 'emails' ? 'Search subject or sender…' : 'Search company or role…';
   document.querySelector('#nav-count').textContent = state.applications.length;
-  renderApplications(document.querySelector('#records'), state.applications);
+  const records = filterRecords(state.applications, {
+    query: document.querySelector('#search').value,
+    status: tab === 'applications' ? document.querySelector('#status-filter').value : '',
+    sort: document.querySelector('#sort').value
+  });
+  document.querySelector('#result-count').textContent = `${records.length} ${records.length === 1 ? 'record' : 'records'}`;
+  renderApplications(document.querySelector('#records'), records);
 }
+
+for (const id of ['search', 'status-filter', 'sort']) document.querySelector(`#${id}`).addEventListener('input', render);
 
 window.addEventListener('hashchange', render);
 async function load() {
