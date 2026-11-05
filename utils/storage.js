@@ -20,11 +20,20 @@ export function mutate(operation, payload = {}) {
   const task = pending.then(async () => {
     const state = await readState();
     applyOperation(state, operation, payload);
+    reconcileLinks(state);
     await chrome.storage.local.set(state);
     return state;
   });
   pending = task.catch(() => {});
   return task;
+}
+
+function reconcileLinks(state) {
+  state.applications = state.applications.map(item => ({
+    ...item,
+    linkedEmailThreadIds: state.tracked_emails
+      .filter(thread => thread.applicationId === item.id).map(thread => thread.threadId)
+  }));
 }
 
 function applyOperation(state, operation, payload) {
