@@ -1,9 +1,30 @@
 import { node, formatDate } from '../utils/dom.js';
+import { inferEmailStatus } from '../utils/email-parser.js';
 
 export function empty(container, title, description) {
   const wrapper = node('div', '', 'empty');
   wrapper.append(node('div', '◇', 'empty-mark'), node('h3', title), node('p', description));
   container.replaceChildren(wrapper);
+}
+
+export function renderEmails(container, emails, applications) {
+  if (!emails.length) return empty(container, 'Keep your conversations together', 'Add an email manually or capture an open Gmail thread from the popup.');
+  const body = table(container, ['Subject', 'Sender', 'Received', 'Linked application', 'Status', 'Actions']);
+  for (const item of emails) {
+    const row = node('tr');
+    const subject = node('td', item.subject, 'email-subject');
+    if (item.actionRequired) subject.append(node('div', '● Action required', 'attention'));
+    const linked = applications.find(application => application.id === item.applicationId);
+    const status = linked?.status || inferEmailStatus(item.subject);
+    const statusCell = node('td');
+    const badge = node('span', linked ? status : `${status} (suggested)`, `badge ${status.toLowerCase()}`);
+    badge.title = linked ? 'Linked application status' : 'Keyword suggestion only; no application was changed.';
+    statusCell.append(badge);
+    const actions = node('td');
+    actions.append(action('Edit / link', 'editEmail', item.threadId), action(item.actionRequired ? 'Mark done' : 'Needs action', 'toggleEmail', item.threadId), action('Delete', 'deleteEmail', item.threadId, true));
+    row.append(subject, node('td', item.sender), node('td', formatDate(item.dateReceived)), node('td', linked ? `${linked.company} · ${linked.role}` : 'Unlinked'), statusCell, actions);
+    body.append(row);
+  }
 }
 
 export function table(container, headings) {

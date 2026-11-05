@@ -1,6 +1,6 @@
 import { readState, request } from '../utils/storage.js';
 import { notify } from '../utils/dom.js';
-import { renderApplications } from './views.js';
+import { renderApplications, renderEmails } from './views.js';
 import { applicationFields } from './forms.js';
 import { filterRecords } from '../utils/filters.js';
 import { renderSummary } from './summary.js';
@@ -70,13 +70,14 @@ function render() {
   document.querySelector('#search').placeholder = tab === 'emails' ? 'Search subject or sender…' : 'Search company or role…';
   document.querySelector('#nav-count').textContent = state.applications.length;
   renderSummary(document.querySelector('#summary'), state.applications);
-  const records = filterRecords(state.applications, {
+  const records = filterRecords(tab === 'emails' ? state.tracked_emails : state.applications, {
     query: document.querySelector('#search').value,
     status: tab === 'applications' ? document.querySelector('#status-filter').value : '',
-    sort: document.querySelector('#sort').value
+    sort: document.querySelector('#sort').value, emails: tab === 'emails'
   });
   document.querySelector('#result-count').textContent = `${records.length} ${records.length === 1 ? 'record' : 'records'}`;
-  renderApplications(document.querySelector('#records'), records);
+  if (tab === 'emails') renderEmails(document.querySelector('#records'), records, state.applications);
+  else renderApplications(document.querySelector('#records'), records);
 }
 
 for (const id of ['search', 'status-filter', 'sort']) document.querySelector(`#${id}`).addEventListener('input', render);
