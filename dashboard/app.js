@@ -3,6 +3,7 @@ import { notify } from '../utils/dom.js';
 import { renderApplications } from './views.js';
 import { applicationFields } from './forms.js';
 import { filterRecords } from '../utils/filters.js';
+import { renderSummary } from './summary.js';
 
 let state = { applications: [], tracked_emails: [] };
 let tab = 'applications';
@@ -68,6 +69,7 @@ function render() {
   document.querySelector('#status-filter').hidden = tab !== 'applications';
   document.querySelector('#search').placeholder = tab === 'emails' ? 'Search subject or sender…' : 'Search company or role…';
   document.querySelector('#nav-count').textContent = state.applications.length;
+  renderSummary(document.querySelector('#summary'), state.applications);
   const records = filterRecords(state.applications, {
     query: document.querySelector('#search').value,
     status: tab === 'applications' ? document.querySelector('#status-filter').value : '',
