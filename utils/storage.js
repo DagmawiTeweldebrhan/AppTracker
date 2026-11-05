@@ -28,5 +28,20 @@ export function mutate(operation, payload = {}) {
 }
 
 function applyOperation(state, operation, payload) {
+  if (operation === 'saveApplication') {
+    const existing = payload.id ? state.applications.find(item => item.id === payload.id) : null;
+    if (payload.id && !existing) throw new Error('This application no longer exists.');
+    const next = application(payload, existing || {});
+    state.applications = existing
+      ? state.applications.map(item => item.id === existing.id ? next : item)
+      : [...state.applications, next];
+    return;
+  }
+  if (operation === 'deleteApplication') {
+    state.applications = state.applications.filter(item => item.id !== payload.id);
+    state.tracked_emails = state.tracked_emails.map(item => item.applicationId === payload.id
+      ? { ...item, applicationId: '' } : item);
+    return;
+  }
   throw new Error('Unknown storage operation.');
 }
