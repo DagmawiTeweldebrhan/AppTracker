@@ -1,7 +1,7 @@
 import { readState, request } from '../utils/storage.js';
 import { notify } from '../utils/dom.js';
 import { renderApplications, renderEmails } from './views.js';
-import { applicationFields } from './forms.js';
+import { applicationFields, emailFields } from './forms.js';
 import { filterRecords } from '../utils/filters.js';
 import { renderSummary } from './summary.js';
 
@@ -19,7 +19,14 @@ function openApplication(item) {
   applicationFields(document.querySelector('#form-fields'), item || { status: tab === 'rejections' ? 'Rejected' : 'Applied' });
   dialog.showModal();
 }
-document.querySelector('#add-record').addEventListener('click', () => openApplication());
+function openEmail(item) {
+  editingType = 'email'; editingId = item?.threadId || '';
+  document.querySelector('#editor-title').textContent = item ? 'Edit and link email' : 'Add email';
+  document.querySelector('#form-error').textContent = '';
+  emailFields(document.querySelector('#form-fields'), state.applications, item);
+  dialog.showModal();
+}
+document.querySelector('#add-record').addEventListener('click', () => tab === 'emails' ? openEmail() : openApplication());
 document.querySelector('#close-editor').addEventListener('click', () => dialog.close());
 document.querySelector('#cancel-editor').addEventListener('click', () => dialog.close());
 form.addEventListener('submit', async event => {
@@ -28,9 +35,12 @@ form.addEventListener('submit', async event => {
   submit.disabled = true;
   try {
     const payload = Object.fromEntries(new FormData(form));
-    if (editingId) payload.id = editingId;
-    state = await request('saveApplication', payload);
-    dialog.close(); render(); notify('Application saved.');
+    if (editingType === 'email') {
+      if (editingId) payload.threadId = editingId;
+      payload.actionRequired = form.elements.actionRequired.checked;
+    } else if (editingId) payload.id = editingId;
+    state = await request(editingType === 'email' ? 'saveEmail' : 'saveApplication', payload);
+    dialog.close(); render(); notify(editingType === 'email' ? 'Email saved and links updated.' : 'Application saved.');
   } catch (error) { document.querySelector('#form-error').textContent = error.message; }
   finally { submit.disabled = false; }
 });
