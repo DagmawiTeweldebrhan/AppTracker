@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AppTracker · Quick add</title>
+  <link rel="stylesheet" href="popup.css">
+  <script type="module" src="popup.js"></script>
+</head>
+<body>
+  <header><img src="../assets/icon-48.png" alt="" width="32" height="32"><div><strong>AppTracker</strong><span>Your next chapter starts here.</span></div></header>
+  <main>
+    <h1>Track an application</h1>
+    <button id="capture-page" type="button" class="secondary">Use current page URL</button>
+    <form id="quick-add">
+      <label>Company<input name="company" required maxlength="200" autocomplete="organization"></label>
+      <label>Role<input name="role" required maxlength="200" autocomplete="organization-title"></label>
+      <div class="row"><label>Date applied<input name="dateApplied" type="date" required></label><label>Status<select name="status"><option>Applied</option><option>Interviewing</option><option>Offer</option><option>Rejected</option></select></label></div>
+      <label>Job URL<input name="url" type="url" placeholder="https://…"></label>
+      <label>Notes<textarea name="notes" rows="2" maxlength="5000"></textarea></label>
+      <button type="submit">Save application</button>
+    </form>
+    <p id="message" role="status" aria-live="polite"></p>
+    <div class="footer"><button id="capture-email" type="button" class="secondary">Capture Gmail thread</button><button id="open-dashboard" type="button" class="link">Open dashboard ↗</button></div>
+  </main>
+</body>
+</html>
