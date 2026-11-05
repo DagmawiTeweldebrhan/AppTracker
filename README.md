@@ -16,8 +16,9 @@ A Chrome Manifest V3 extension for tracking job applications, email threads, and
 - **Rejection log:** Shows exactly the applications marked **Rejected**. Record rejection stage and feedback in the notes field.
 - **Quick add:** **Use current page URL** copies the active job posting URL; fill in the company and role yourself.
 - **Gmail capture:** Open a conversation on `mail.google.com`, click AppTracker, then **Capture Gmail thread**. Open the Emails dashboard to link it. Already tracked conversations are preserved.
+- **Automatic Gmail tracking:** Connect each Gmail/Google Workspace inbox in the dashboard. AppTracker scans historical incoming mail, reads bodies locally to detect confirmations and rejections, creates application records, and updates matched rejections. Follow the [one-time Gmail OAuth setup](docs/gmail-setup.md).
 
-Gmail capture reads the visible subject, sender, thread identifier, and date on demand. It does not read message bodies. Gmail markup changes can break capture; manual email entry remains available. Captured dates fall back to capture time if Gmail exposes no readable date. Keyword status suggestions are labeled and never change application status automatically.
+Manual Gmail capture reads visible metadata on demand. The separate automatic integration uses the read-only Gmail API, with consent for each connected account. It scans in resumable batches and checks new mail roughly every five minutes while Chrome is running. Bodies are processed in memory and discarded. Ambiguous detected messages are flagged for review. Automatic status changes apply to matched rejection emails; subject-only suggestions from manual capture remain suggestions.
 
 ## Development
 
@@ -33,10 +34,10 @@ npm run package
 
 ## Structure
 
-`background.js` serializes writes; `content.js` captures Gmail metadata only when injected by the popup. `utils/` contains validation, local storage, parsing, and rendering helpers. `popup/` is quick add; `dashboard/` contains Applications, Emails, and Rejections.
+`background.js` serializes writes and schedules inbox scans; `content.js` captures Gmail metadata only when injected by the popup. `utils/` contains validation, local storage, Gmail authorization/API/sync, detection, and rendering helpers. `popup/` is quick add; `dashboard/` contains Applications, Emails, Rejections, and connected-inbox controls.
 
 The data models retain the architecture's `applications` and `tracked_emails` arrays. Deleting an application keeps its emails and clears their link. Deleting or relinking an email reconciles `linkedEmailThreadIds`.
 
 ## Scope and data
 
-Data stays in the current browser profile. There is no server, analytics, cross-device sync, or Gmail OAuth. Clearing extension storage or uninstalling removes records. OAuth is future work in the architecture and is intentionally deferred. See [privacy and permissions](docs/privacy.md).
+Application records stay in the current browser profile. There is no AppTracker server, analytics, or cross-device sync. Automatic Gmail tracking implements the architecture’s optional Gmail integration, expanded at the user’s request. It requires a configured Google OAuth client and per-account consent before it can access email. Tokens are session-only; Google may require reconnecting after expiry or a browser restart. Clearing extension storage or uninstalling removes records. See [privacy and permissions](docs/privacy.md).
