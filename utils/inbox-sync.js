@@ -73,6 +73,10 @@ export function createInboxService({ api = gmailGet, authorize = authorizeGmail,
     } catch (error) {
       // Do not advance the checkpoint on partial reads or failed local writes.
       account.error = error.message;
+      if (error.status === 400 && account.scan?.pageToken) {
+        account.scan.pageToken = '';
+        account.error = 'Gmail scan cursor expired. This scan window will restart without duplicating imports.';
+      }
       account.nextCheckAt = now() + 60000;
       if (error.status === 401) {
         const cache = await tokens(); delete cache[account.email]; await saveTokens(cache);

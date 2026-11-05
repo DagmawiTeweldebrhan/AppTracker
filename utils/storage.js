@@ -67,6 +67,16 @@ function applyOperation(state, operation, payload) {
     if (next.applicationId && !state.applications.some(item => item.id === next.applicationId)) {
       throw new Error('The linked application no longer exists.');
     }
+    const detection = state.automation.threads[next.threadId];
+    if (detection && next.applicationId && next.applicationId !== existing?.applicationId) {
+      const linked = state.applications.find(item => item.id === next.applicationId);
+      const timestamp = Date.parse(detection.dateReceived);
+      const metadata = state.automation.applications[linked.id] || {};
+      if (timestamp >= (metadata.lastStatusAt || 0) && (detection.status === 'Rejected' || linked.status === 'Applied')) {
+        linked.status = detection.status;
+        state.automation.applications[linked.id] = { lastStatusAt: timestamp };
+      }
+    }
     state.tracked_emails = existing
       ? state.tracked_emails.map(item => item.threadId === existing.threadId ? next : item)
       : [...state.tracked_emails, next];

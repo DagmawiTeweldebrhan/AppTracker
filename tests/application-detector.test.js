@@ -36,6 +36,11 @@ test('quoted historical rejection cannot turn a new confirmation into rejection'
   const event = detectApplication(message('Thank you for applying for Engineer at Acme', 'Do not reply. On Tuesday November 3, Recruiter wrote: We will not be moving forward with your application.'));
   assert.equal(event.status, 'Applied');
 });
+test('HTML blockquotes and Gmail quote sections are excluded from new event detection', () => {
+  const body = 'We received your application.<blockquote>We will not be moving forward with your application.</blockquote>';
+  assert.equal(detectApplication(message('Thank you for applying for Engineer at Acme', body)).status, 'Applied');
+  assert.equal(detectApplication(message('Thank you for applying for Engineer at Acme', 'Application received.<div class="gmail_quote">We will not be moving forward with your application.</div>')).status, 'Applied');
+});
 test('Gmail MIME decoder reads UTF-8 nested body parts, skips attachments and sent mail', () => {
   const payload = { mimeType: 'multipart/mixed', headers: [{ name: 'Subject', value: 'Application received' }, { name: 'From', value: 'Recruiter' }], parts: [
     { mimeType: 'multipart/alternative', parts: [{ mimeType: 'text/html', body: { data: Buffer.from('<p>Résumé for engineer</p>').toString('base64url') } }] },

@@ -2,6 +2,8 @@ import { text } from './models.js';
 
 export function htmlToText(value) {
   return String(value || '').replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<blockquote\b[^>]*>[\s\S]*?<\/blockquote>/gi, ' ')
+    .replace(/<div\b[^>]*class=["'][^"']*gmail_quote[^"']*["'][\s\S]*/gi, ' ')
     .replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&#160;/gi, ' ').replace(/&amp;/gi, '&')
     .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'")
     .replace(/\s+/g, ' ').trim();
@@ -43,7 +45,7 @@ export const normalizeIdentity = normalized;
 export function detectApplication(message) {
   if (message.outgoing) return null;
   const subject = text(message.subject, 500);
-  const body = htmlToText(message.body).split(/\bOn .{5,120}wrote:|-----Original Message-----/i)[0];
+  const body = htmlToText(String(message.body || '').replace(/^>.*$/gm, '')).split(/\bOn .{5,120}wrote:|-----Original Message-----/i)[0];
   const content = `${subject}\n${body}`;
   const confirmation = /thank(?:s| you) for (?:applying|your (?:job )?application)|(?:we(?:'ve| have)? |has been |was )received your application|your application (?:has been|was) (?:received|submitted)|application (?:received|confirmation)|successfully (?:applied|submitted your application)/i.test(content);
   const jobContext = /\b(?:application|applying|candidate|candidacy|position|role|interview|hiring|recruitment)\b/i.test(content);

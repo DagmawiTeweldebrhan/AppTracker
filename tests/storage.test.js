@@ -51,3 +51,13 @@ test('stale application edits cannot recreate deleted records', async () => {
   await assert.rejects(mutate('saveApplication', { ...applicationInput('A'), id: 'deleted' }), /no longer exists/);
   await assert.rejects(mutate('unsupported', {}), /Unknown/);
 });
+test('manually resolving an ambiguous detected rejection applies its status to the selected application', async () => {
+  let state = await mutate('saveApplication', applicationInput('A'));
+  const id = state.applications[0].id;
+  const event = { ...emailInput('detected'), messageId: 'm1', account: 'me@example.com', company: '', role: '', status: 'Rejected' };
+  state = await mutate('importDetectedEmails', { events: [event] });
+  assert.equal(state.tracked_emails[0].applicationId, '');
+  state = await mutate('saveEmail', { ...state.tracked_emails[0], applicationId: id });
+  assert.equal(state.applications[0].status, 'Rejected');
+  assert.deepEqual(state.applications[0].linkedEmailThreadIds, ['detected']);
+});
