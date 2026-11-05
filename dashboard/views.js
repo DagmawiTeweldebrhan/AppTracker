@@ -72,3 +72,14 @@ export function renderApplications(container, applications) {
     body.append(row);
   }
 }
+
+export function renderRejections(container, applications) {
+  if (!applications.length) return empty(container, 'No rejections to show', 'Applications marked Rejected will appear here with your notes and feedback.');
+  const body = table(container, ['Company', 'Role', 'Date applied', 'Rejection stage / feedback', 'Actions']);
+  for (const item of applications) {
+    const row = node('tr');
+    const actions = node('td'); actions.append(action('Edit feedback', 'editApplication', item.id), action('Delete', 'deleteApplication', item.id, true));
+    row.append(node('td', item.company, 'company-name'), node('td', item.role), node('td', formatDate(item.dateApplied)), node('td', item.notes || 'No feedback recorded yet.', 'notes'), actions);
+    body.append(row);
+  }
+}

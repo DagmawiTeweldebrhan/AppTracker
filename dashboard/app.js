@@ -1,6 +1,6 @@
 import { readState, request } from '../utils/storage.js';
 import { notify } from '../utils/dom.js';
-import { renderApplications, renderEmails } from './views.js';
+import { renderApplications, renderEmails, renderRejections } from './views.js';
 import { applicationFields, emailFields } from './forms.js';
 import { filterRecords } from '../utils/filters.js';
 import { renderSummary } from './summary.js';
@@ -95,11 +95,12 @@ function render() {
   renderSummary(document.querySelector('#summary'), state.applications);
   const records = filterRecords(tab === 'emails' ? state.tracked_emails : state.applications, {
     query: document.querySelector('#search').value,
-    status: tab === 'applications' ? document.querySelector('#status-filter').value : '',
+    status: tab === 'rejections' ? 'Rejected' : tab === 'applications' ? document.querySelector('#status-filter').value : '',
     sort: document.querySelector('#sort').value, emails: tab === 'emails'
   });
   document.querySelector('#result-count').textContent = `${records.length} ${records.length === 1 ? 'record' : 'records'}`;
   if (tab === 'emails') renderEmails(document.querySelector('#records'), records, state.applications);
+  else if (tab === 'rejections') renderRejections(document.querySelector('#records'), records);
   else renderApplications(document.querySelector('#records'), records);
 }
 
