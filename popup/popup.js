@@ -1,5 +1,6 @@
-import { request } from '../utils/storage.js';
+import { request, readState } from '../utils/storage.js';
 import { localDate, notify } from '../utils/dom.js';
+import { parseCapturedEmail } from '../utils/email-parser.js';
 
 const form = document.querySelector('#quick-add');
 form.elements.dateApplied.value = localDate();
@@ -26,4 +27,25 @@ document.querySelector('#capture-page').addEventListener('click', async () => {
     form.elements.url.value = tab.url;
     notify('URL added. Fill in the company and role, then save.');
   } catch (error) { notify(error.message, true); }
+});
+
+document.querySelector('#capture-email').addEventListener('click', async event => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.url || new URL(tab.url).hostname !== 'mail.google.com') {
+      throw new Error('Open a Gmail conversation in the active tab first.');
+    }
+    const results = await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
+    const capture = parseCapturedEmail(results[0]?.result || {});
+    const state = await readState();
+    if (state.tracked_emails.some(item => item.threadId === capture.threadId)) {
+      notify('This thread is already tracked. Open Emails in the dashboard to edit its link.');
+      return;
+    }
+    await request('saveEmail', capture);
+    notify('Thread captured. Open Emails in the dashboard to link it to an application.');
+  } catch (error) { notify(error.message, true); }
+  finally { button.disabled = false; }
 });
