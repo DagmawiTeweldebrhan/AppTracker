@@ -7,7 +7,7 @@ export function empty(container, title, description) {
   container.replaceChildren(wrapper);
 }
 
-export function renderEmails(container, emails, applications) {
+export function renderEmails(container, emails, applications, detectedThreads = {}) {
   if (!emails.length) return empty(container, 'Keep your conversations together', 'Add an email manually or capture an open Gmail thread from the popup.');
   const body = table(container, ['Subject', 'Sender', 'Received', 'Linked application', 'Status', 'Actions']);
   for (const item of emails) {
@@ -15,9 +15,11 @@ export function renderEmails(container, emails, applications) {
     const subject = node('td', item.subject, 'email-subject');
     if (item.actionRequired) subject.append(node('div', '● Action required', 'attention'));
     const linked = applications.find(application => application.id === item.applicationId);
-    const status = linked?.status || inferEmailStatus(item.subject);
+    const detected = detectedThreads[item.threadId];
+    if (detected) subject.append(node('div', `Detected in ${detected.account}${!linked ? ' · Review company / role and link an application' : ''}`, 'account-progress'));
+    const status = linked?.status || detected?.status || inferEmailStatus(item.subject);
     const statusCell = node('td');
-    const badge = node('span', linked ? status : `${status} (suggested)`, `badge ${status.toLowerCase()}`);
+    const badge = node('span', linked ? status : `${status} (${detected ? 'detected' : 'suggested'})`, `badge ${status.toLowerCase()}`);
     badge.title = linked ? 'Linked application status' : 'Keyword suggestion only; no application was changed.';
     statusCell.append(badge);
     const actions = node('td');

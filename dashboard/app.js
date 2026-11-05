@@ -4,6 +4,7 @@ import { renderApplications, renderEmails, renderRejections } from './views.js';
 import { applicationFields, emailFields } from './forms.js';
 import { filterRecords } from '../utils/filters.js';
 import { renderSummary } from './summary.js';
+import './inboxes.js';
 
 let state = { applications: [], tracked_emails: [] };
 let tab = 'applications';
@@ -99,7 +100,7 @@ function render() {
     sort: document.querySelector('#sort').value, emails: tab === 'emails'
   });
   document.querySelector('#result-count').textContent = `${records.length} ${records.length === 1 ? 'record' : 'records'}`;
-  if (tab === 'emails') renderEmails(document.querySelector('#records'), records, state.applications);
+  if (tab === 'emails') renderEmails(document.querySelector('#records'), records, state.applications, state.automation.threads);
   else if (tab === 'rejections') renderRejections(document.querySelector('#records'), records);
   else renderApplications(document.querySelector('#records'), records);
 }
