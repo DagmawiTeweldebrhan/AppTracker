@@ -1,5 +1,6 @@
 import { readState, request } from '../utils/storage.js';
 import { notify } from '../utils/dom.js';
+import { renderApplications } from './views.js';
 
 let state = { applications: [], tracked_emails: [] };
 let tab = 'applications';
@@ -25,6 +26,7 @@ function render() {
   document.querySelector('#status-filter').hidden = tab !== 'applications';
   document.querySelector('#search').placeholder = tab === 'emails' ? 'Search subject or sender…' : 'Search company or role…';
   document.querySelector('#nav-count').textContent = state.applications.length;
+  renderApplications(document.querySelector('#records'), state.applications);
 }
 
 window.addEventListener('hashchange', render);
