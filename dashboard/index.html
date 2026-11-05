@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AppTracker · Your applications</title>
+  <link rel="stylesheet" href="styles.css"><script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to applications</a>
+  <aside class="sidebar">
+    <a class="brand" href="#applications"><img src="../assets/icon-48.png" width="34" height="34" alt="">AppTracker</a>
+    <p class="nav-label">YOUR WORKSPACE</p>
+    <nav aria-label="Main navigation">
+      <a href="#applications" data-tab="applications">▦ <span>Applications</span><span id="nav-count" class="count">0</span></a>
+      <a href="#emails" data-tab="emails">✉ <span>Emails</span></a>
+      <a href="#rejections" data-tab="rejections">◷ <span>Rejection log</span></a>
+    </nav>
+    <div class="sidebar-note"><span class="local-dot"></span> Stored on this device<p>Your career journey.<br>Your data stays with you.</p></div>
+  </aside>
+  <main id="main" tabindex="-1">
+    <header class="topbar"><span>Workspace <span class="breadcrumb">/ <span id="crumb">Applications</span></span></span><span class="local-chip">Local storage</span></header>
+    <section class="content">
+      <div class="page-heading"><div><p class="eyebrow">MAKE YOUR NEXT MOVE</p><h1 id="page-title">Your applications</h1><p id="page-description">A little structure for your next big opportunity.</p></div><button id="add-record" class="primary">+ Add application</button></div>
+      <div id="summary" class="summary" aria-label="Application overview"></div>
+      <div class="panel">
+        <div class="toolbar"><div><h2 id="table-title">All applications</h2><span id="result-count" class="muted"></span></div><div class="filters"><label class="sr-only" for="search">Search records</label><input id="search" type="search" placeholder="Search company or role…"><label class="sr-only" for="status-filter">Filter by status</label><select id="status-filter"><option value="">All statuses</option><option>Applied</option><option>Interviewing</option><option>Offer</option><option>Rejected</option></select><label class="sr-only" for="sort">Sort records</label><select id="sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="company">Company A–Z</option></select></div></div>
+        <div id="records" aria-live="polite"></div>
+      </div>
+      <p id="message" role="status" aria-live="polite"></p>
+      <footer>One application at a time. You’re making progress.</footer>
+    </section>
+  </main>
+  <dialog id="editor"><form id="record-form"><div class="dialog-heading"><h2 id="editor-title">Add application</h2><button type="button" id="close-editor" class="icon-button" aria-label="Close form">×</button></div><div id="form-fields"></div><p id="form-error" role="alert"></p><div class="dialog-actions"><button type="button" id="cancel-editor" class="secondary">Cancel</button><button type="submit" class="primary">Save</button></div></form></dialog>
+</body>
+</html>
