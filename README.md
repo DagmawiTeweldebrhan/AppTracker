@@ -1,6 +1,6 @@
 # AppTracker
 
-A Chrome Manifest V3 extension for tracking job applications, email threads, and rejection feedback. Requires Chrome 116 or newer. Built directly from [the supplied architecture](tracker_extension_architecture.md) with vanilla JavaScript, HTML, CSS, and `chrome.storage.local`. No runtime dependencies or build step.
+A Chrome Manifest V3 extension for tracking job applications, email threads, and rejection feedback. Requires Chrome 116 or newer. 
 
 ## Load in Chrome
 
